@@ -1,0 +1,15 @@
+{
+  "date": "2026-11-17T09:24:02.534Z",
+  "freshTaskOnlyInstallation": true,
+  "noThemeResources": {
+    "marker": 0,
+    "styleNodes": 0,
+    "tokenVariables": 0,
+    "settingsEntry": 0
+  },
+  "hostDarkMode": true,
+  "createTask": true,
+  "pageErrors": [],
+  "consoleErrors": [],
+  "passed": true
+}

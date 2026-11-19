@@ -1,0 +1,158 @@
+{
+  "date": "2026-11-17T09:54:41.457Z",
+  "environment": {
+    "node": "v24.18.1",
+    "os": "win32",
+    "arch": "x64",
+    "browser": "157.0.4341.60",
+    "host": "0.2.2-rc.1",
+    "profile": "web",
+    "isolation": "new temporary DSH_HOME, original local synthetic transcript, no configured model"
+  },
+  "checks": {
+    "themeOnly": {
+      "standaloneDefault": true,
+      "lightDark": {
+        "light": "rgb(253, 253, 252)",
+        "dark": "rgb(32, 35, 39)"
+      },
+      "systemFollowsDSH": true,
+      "exactHostStyleRestored": true,
+      "keyboardRadio": true,
+      "refresh": true,
+      "twoPages": true,
+      "narrowSettings": {
+        "width": 343,
+        "scroll": 343
+      }
+    },
+    "disable": {
+      "removed": {
+        "marker": 0,
+        "styleNodes": 0,
+        "tokenVariables": 0,
+        "settingsEntry": 0
+      },
+      "reenableRestoresSavedPaper": true
+    },
+    "hostRestartRestoresPaper": true,
+    "tasks": {
+      "widths": [
+        {
+          "style": "default",
+          "viewport": 1366,
+          "width": 1086,
+          "scrollWidth": 1086
+        },
+        {
+          "style": "default",
+          "viewport": 1024,
+          "width": 744,
+          "scrollWidth": 744
+        },
+        {
+          "style": "default",
+          "viewport": 768,
+          "width": 488,
+          "scrollWidth": 488
+        },
+        {
+          "style": "default",
+          "viewport": 375,
+          "width": 375,
+          "scrollWidth": 375
+        },
+        {
+          "style": "paper",
+          "viewport": 1366,
+          "width": 1086,
+          "scrollWidth": 1086
+        },
+        {
+          "style": "paper",
+          "viewport": 1024,
+          "width": 744,
+          "scrollWidth": 744
+        },
+        {
+          "style": "paper",
+          "viewport": 768,
+          "width": 712,
+          "scrollWidth": 712
+        },
+        {
+          "style": "paper",
+          "viewport": 375,
+          "width": 375,
+          "scrollWidth": 375
+        }
+      ],
+      "draftAndDOMSurviveThemeChange": true,
+      "createSearchAndControlsBothThemes": true,
+      "realDeleteCancelAndCommit": true
+    },
+    "conversation": {
+      "syntheticOfflineTranscript": true,
+      "markdownAndCode": true,
+      "syntax": {
+        "foreground": "rgb(231, 234, 238)",
+        "background": "rgb(28, 32, 37)",
+        "keyword": "#efb0ae"
+      },
+      "menuKeyboard": true,
+      "draftAndDOMSurviveThemeChange": true,
+      "narrowComposer": {
+        "x": 16,
+        "y": 692,
+        "width": 332,
+        "height": 36
+      }
+    },
+    "uninstall": {
+      "removed": {
+        "marker": 0,
+        "styleNodes": 0,
+        "tokenVariables": 0,
+        "settingsEntry": 0
+      },
+      "withoutReload": true,
+      "tasksStandaloneAfterReload": true,
+      "remainingTasks": 2
+    }
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "testedTarballs": {
+    "theme": "85581de37b985ac4f59d322f833f4450908a4597e1cc9dae0e1698509b44141c",
+    "tasks": "f2ca4c4e6c77a2780a410401da4804f0b1214afddb300d137f427296f2f22443"
+  },
+  "screenshots": [
+    "01-default-settings.png",
+    "02-paper-settings.png",
+    "03-paper-home-light.png",
+    "04-paper-home-dark.png",
+    "05-paper-settings-narrow.png",
+    "06-disabled-settings.png",
+    "07-tasks-paper-light.png",
+    "08-tasks-default.png",
+    "09-tasks-default-select.png",
+    "09-tasks-paper-select.png",
+    "10-tasks-default-narrow.png",
+    "10-tasks-paper-narrow.png",
+    "11-tasks-paper-dark.png",
+    "12-tasks-paper-dark-select.png",
+    "13-tasks-delete-dialog.png",
+    "14-paper-conversation-light.png",
+    "15-paper-conversation-menu.png",
+    "16-paper-conversation-dark.png",
+    "17-paper-conversation-narrow.png",
+    "18-tasks-after-theme-removal.png"
+  ],
+  "hostFiles": {
+    "node_modules/@deepseek-ai/dsh-client-ui-theme/lib/client.js": "78d79a77112e2a83cfa1a9015c06f4b980efb9e1b071bc0b2ba46525748c3592",
+    "node_modules/@deepseek-ai/dsh-client-ui-theme/lib/index.js": "1adf59906ab10e91765d96f3e42268b0b7669f921c4baf4021a3057894cf3000",
+    "node_modules/@deepseek-ai/dsh-client-ui-settings/lib/client.js": "0555eec2df1ca392a1167e637f287ac9963dbd2b0a230089c2a41be079c490e3",
+    "node_modules/@deepseek-ai/dsh-client-ui-layout/lib/client.js": "338bcbdea1180e56b0a8e86788d1e75b09296cbe7ba042a06cdc91028001cf93"
+  },
+  "passed": true
+}

@@ -1,0 +1,34 @@
+{
+  "date": "2026-11-17",
+  "node": "v24.18.1",
+  "suites": [
+    {
+      "plugin": "tavlo-plugins-tasks",
+      "command": "node --test tests/*.test.mjs",
+      "tests": 76,
+      "passed": 76,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 2008.3405
+    },
+    {
+      "plugin": "tavlo-plugins-paper-theme",
+      "command": "node --test tests/*.test.mjs",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 216.8584
+    }
+  ],
+  "looseleafAudit": {
+    "verifiedFiles": 60,
+    "commit": "4bdb647940e2fefb3cebb394f3bad25c766a27d2",
+    "fullMITMatches": true,
+    "texturesUnchanged": true,
+    "textureSha256": [
+      "d482ca23ac111d544bb6b6fb7803cee88e25d7c72d93d94482991d6dc96f1694",
+      "62e0029469c1f1523a6682d0a56e8e44a02de9ba00bdb197882806185958bcd9"
+    ]
+  }
+}

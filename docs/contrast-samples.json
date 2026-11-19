@@ -1,0 +1,101 @@
+{
+  "method": "WCAG relative luminance, opaque semantic token samples; not a complete accessibility audit",
+  "results": [
+    {
+      "foreground": "ink",
+      "background": "canvas",
+      "light": 11.42,
+      "dark": 12.86
+    },
+    {
+      "foreground": "muted",
+      "background": "paper",
+      "light": 5.53,
+      "dark": 7.3
+    },
+    {
+      "foreground": "subtle",
+      "background": "paper",
+      "light": 4.77,
+      "dark": 5.3
+    },
+    {
+      "foreground": "onAccent",
+      "background": "accent",
+      "light": 6.22,
+      "dark": 8.07
+    },
+    {
+      "foreground": "accent",
+      "background": "paper",
+      "light": 6.22,
+      "dark": 7.47
+    },
+    {
+      "foreground": "info",
+      "background": "paper",
+      "light": 6.28,
+      "dark": 8.21
+    },
+    {
+      "foreground": "warning",
+      "background": "paper",
+      "light": 5.67,
+      "dark": 7.94
+    },
+    {
+      "foreground": "danger",
+      "background": "paper",
+      "light": 6.69,
+      "dark": 6.99
+    },
+    {
+      "foreground": "success",
+      "background": "paper",
+      "light": 6.43,
+      "dark": 8.42
+    },
+    {
+      "foreground": "ink",
+      "background": "code",
+      "light": 10.59,
+      "dark": 13.38
+    },
+    {
+      "foreground": "info",
+      "background": "code",
+      "light": 5.58,
+      "dark": 9.86
+    },
+    {
+      "foreground": "accent",
+      "background": "code",
+      "light": 5.52,
+      "dark": 8.97
+    },
+    {
+      "foreground": "muted",
+      "background": "code",
+      "light": 4.91,
+      "dark": 8.76
+    },
+    {
+      "foreground": "danger",
+      "background": "code",
+      "light": 5.94,
+      "dark": 8.39
+    },
+    {
+      "foreground": "warning",
+      "background": "code",
+      "light": 5.04,
+      "dark": 9.54
+    },
+    {
+      "foreground": "syntaxFunction",
+      "background": "code",
+      "light": 5.73,
+      "dark": 8.45
+    }
+  ]
+}
