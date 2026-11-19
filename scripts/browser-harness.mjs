@@ -23,7 +23,12 @@ export async function createHarness({ cli, playwright, executablePath, output, r
   const page = await context.newPage()
   const errors = [], consoleErrors = []
   page.on('pageerror', error => errors.push(error.message))
-  page.on('console', message => { if (message.type() === 'error') consoleErrors.push(message.text()) })
+  page.on('console', message => {
+    if (message.type() !== 'error') return
+    const location = message.location().url
+    const path = /^https?:/.test(location) ? new URL(location).pathname : ''
+    consoleErrors.push(path ? `${message.text()} [${path}]` : message.text())
+  })
   await page.addLocatorHandler(page.getByRole('button', { name: '继续', exact: true }), button => button.click())
   let host, generation = 0, origin
   async function stop() {

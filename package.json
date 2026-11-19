@@ -1,9 +1,21 @@
 {
-  "name": "dsh-plugin-paper-theme",
+  "name": "@tavlo-dsh/dsh-plugin-paper-theme",
   "version": "0.1.2",
-  "description": "可选的 DSH 全局纸面主题，亮暗模式与字体跟随宿主",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "description": "DSH 的 iOS 圆角与纸面主题，支持任务看板单独切换",
   "license": "MIT",
   "author": "Tavlo-dsh",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tavlo-dsh/tavlo-plugins-paper-theme.git"
+  },
+  "homepage": "https://github.com/Tavlo-dsh/tavlo-plugins-paper-theme#readme",
+  "bugs": {
+    "url": "https://github.com/Tavlo-dsh/tavlo-plugins-paper-theme/issues"
+  },
   "type": "module",
   "main": "index.js",
   "exports": {

@@ -52,9 +52,9 @@
 dsh plugin --profile web add ./dsh-plugin-paper-theme-0.1.2.tgz
 npm test
 node scripts/verify-palette.mjs
-$env:DSH_CLI = 'F:/soft/nodejs/node_global/node_modules/@deepseek-ai/dsh/lib/bin.js'
-$env:PLAYWRIGHT_MODULE = 'C:/Users/1/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs'
-$env:BROWSER_EXECUTABLE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
+$env:DSH_CLI = '<DSH CLI bin.js 的绝对路径>'
+$env:PLAYWRIGHT_MODULE = '<Playwright index.mjs 的绝对路径>'
+$env:BROWSER_EXECUTABLE = '<浏览器可执行文件的绝对路径>'
 $env:SCREENSHOT_OUTPUT = 'docs/screenshots/v0.1.2'
 $env:VERIFICATION_REPORT = 'docs/browser-verification-0.1.2.json'
 node scripts/verify-browser.mjs <theme.tgz> <tasks.tgz>

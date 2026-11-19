@@ -1,5 +1,5 @@
 - insert:
     - id: tavlo-paper-theme
-      name: dsh-plugin-paper-theme
+      name: '@tavlo-dsh/dsh-plugin-paper-theme'
       config:
         appearance: default

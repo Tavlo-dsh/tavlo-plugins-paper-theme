@@ -33,8 +33,19 @@ export async function appearance(page, value) {
   await page.getByRole('button', { name: '全局主题', exact: true }).click()
   const choice = page.locator(`input[name="dsh-paper-appearance"][value="${value}"]`)
   if (!await choice.isChecked()) await choice.click()
-  await page.waitForFunction(value => document.body.getAttribute('data-dsh-paper-theme') === (value === 'paper' ? 'paper' : null), value)
+  await waitForAppearance(page, value)
   await page.getByText('已保存到当前 DSH profile，连接此宿主的页面同步生效。', { exact: true }).waitFor()
+}
+async function waitForAppearance(page, value) {
+  await page.waitForFunction(value => document.body.getAttribute('data-dsh-paper-theme') === (value === 'default' ? null : value), value)
+}
+async function waitForTaskAppearance(page, value) {
+  await page.waitForFunction(value => document.body.getAttribute('data-dsh-task-appearance') === (value === 'inherit' ? null : value), value)
+}
+async function taskAppearance(page, value) {
+  await page.getByRole('combobox', { name: '任务卡片外观', exact: true }).selectOption(value)
+  await waitForTaskAppearance(page, value)
+  await page.locator('.dsh-tasks-appearance[aria-busy="false"]').waitFor()
 }
 export async function mode(page, value) {
   await openSettings(page)
@@ -51,6 +62,7 @@ export async function hostState(page) {
     style: document.body.getAttribute('style'),
     base: getComputedStyle(document.body).backgroundColor,
     token: getComputedStyle(document.body).getPropertyValue('--dsw-alias-bg-base').trim(),
+    radius: getComputedStyle(document.body).getPropertyValue('--dsw-radius-lg').trim(),
   }))
 }
 
@@ -64,9 +76,23 @@ export async function verifyTheme(page, output) {
   assert.equal(await page.getByRole('button', { name: '任务', exact: true }).count(), 0)
   checks.standaloneDefault = true
   await page.screenshot({ path: join(output, '01-default-settings.png'), fullPage: true })
+  await appearance(page, 'ios')
+  const iosLight = await hostState(page)
+  assert.equal(iosLight.base, 'rgb(255, 255, 255)')
+  assert.equal(iosLight.radius, '20px')
+  assert.equal(iosLight.source, original.source)
+  await page.screenshot({ path: join(output, '21-ios-settings.png'), fullPage: true })
+  await mode(page, 'dark')
+  const iosDark = await hostState(page)
+  assert.equal(iosDark.base, 'rgb(23, 23, 25)')
+  assert.equal(iosDark.radius, iosLight.radius)
+  assert.equal(iosDark.dark, true)
+  checks.iosLightDark = { light: iosLight.base, dark: iosDark.base, radius: iosLight.radius }
+  await mode(page, 'light')
   await appearance(page, 'paper')
   const paper = await hostState(page)
   assert.equal(paper.base, 'rgb(255, 255, 255)')
+  assert.equal(paper.radius, '16px')
   assert.equal(paper.source, original.source)
   await page.screenshot({ path: join(output, '02-paper-settings.png'), fullPage: true })
   await closeSettings(page)
@@ -75,6 +101,7 @@ export async function verifyTheme(page, output) {
   await closeSettings(page)
   const dark = await hostState(page)
   assert.equal(dark.base, 'rgb(21, 23, 28)')
+  assert.equal(dark.radius, paper.radius)
   assert.equal(dark.dark, true)
   await page.screenshot({ path: join(output, '04-paper-home-dark.png'), fullPage: true })
   checks.lightDark = { light: paper.base, dark: dark.base }
@@ -94,7 +121,7 @@ export async function verifyTheme(page, output) {
   const radio = page.locator('input[value="paper"]')
   await radio.focus()
   await page.keyboard.press('ArrowLeft')
-  await page.waitForFunction(() => !document.body.hasAttribute('data-dsh-paper-theme'))
+  await waitForAppearance(page, 'ios')
   await page.locator('.dsh-paper-settings[aria-busy="false"]').waitFor()
   await page.keyboard.press('ArrowRight')
   await page.waitForFunction(() => document.body.getAttribute('data-dsh-paper-theme') === 'paper')
@@ -127,10 +154,10 @@ export async function verifyTheme(page, output) {
 }
 
 export async function verifyTasks(page, output) {
-  const checks = { widths: [] }
+  const checks = { widths: [], toolbars: { ios: [], paper: [] } }
   await preparePage(page)
   await page.getByRole('button', { name: '任务', exact: true }).click()
-  const root = page.locator('.dsh-tasks-root')
+  const root = page.locator('.dsh-tasks-root:has(> .dsh-tasks-toolbar)')
   await page.locator('[data-task-sync="live"]').waitFor()
   const opener = page.getByRole('button', { name: '新建任务', exact: true })
   const dialog = page.getByRole('dialog', { name: '新建任务', exact: true })
@@ -156,12 +183,25 @@ export async function verifyTasks(page, output) {
   const [settingsPage] = await Promise.all([
     page.context().waitForEvent('page'), page.evaluate(() => { window.open(location.href, '_blank') }),
   ])
-  for (const value of ['default', 'paper']) {
+  for (const value of ['default', 'ios', 'paper']) {
     await appearance(settingsPage, value)
-    await page.waitForFunction(value => document.body.getAttribute('data-dsh-paper-theme') === (value === 'paper' ? 'paper' : null), value)
+    await waitForAppearance(page, value)
     assert(await draftNode.evaluate(el => el.isConnected))
     assert.equal(await draftTitle.inputValue(), '跨页面主题切换保留草稿')
   }
+  await closeSettings(settingsPage)
+  await settingsPage.getByRole('button', { name: '任务', exact: true }).click()
+  await taskAppearance(settingsPage, 'ios')
+  await waitForTaskAppearance(page, 'ios')
+  assert.equal((await hostState(page)).marker, 'paper')
+  assert(await draftNode.evaluate(el => el.isConnected))
+  assert.equal(await draftTitle.inputValue(), '跨页面主题切换保留草稿')
+  await settingsPage.reload({ waitUntil: 'domcontentloaded' })
+  await waitForTaskAppearance(settingsPage, 'ios')
+  await settingsPage.getByRole('button', { name: '任务', exact: true }).click()
+  assert.equal(await settingsPage.getByRole('combobox', { name: '任务卡片外观', exact: true }).inputValue(), 'ios')
+  await taskAppearance(settingsPage, 'inherit')
+  await waitForTaskAppearance(page, 'inherit')
   await settingsPage.close()
   await page.keyboard.press('Escape')
   checks.draftAndDOMSurviveThemeChange = true
@@ -170,10 +210,30 @@ export async function verifyTasks(page, output) {
   assert.match(await root.locator('article').first().evaluate(el => getComputedStyle(el).backgroundImage), /data:image\/png/)
   checks.lightMaterials = await verifyMaterials(root, 'light')
   await page.screenshot({ path: join(output, '07-tasks-paper-light.png'), fullPage: true })
+  await appearance(page, 'ios'); await closeSettings(page)
+  const iosCard = root.locator('article').first()
+  const cardNode = await iosCard.elementHandle()
+  checks.iosLight = await verifyRoundedCard(iosCard, 'rgb(255, 255, 255)')
+  await page.screenshot({ path: join(output, '22-ios-tasks-light.png'), fullPage: true })
+  const globalBeforeTaskSwitch = await hostState(page)
+  await taskAppearance(page, 'paper')
+  assert.deepEqual(await hostState(page), globalBeforeTaskSwitch)
+  await verifyMaterials(root, 'light')
+  assert(await cardNode.evaluate(el => el.isConnected))
+  await mode(page, 'dark'); await closeSettings(page)
+  await verifyMaterials(root, 'dark')
+  const globalBeforeIosSwitch = await hostState(page)
+  await taskAppearance(page, 'ios')
+  assert.deepEqual(await hostState(page), globalBeforeIosSwitch)
+  checks.iosDark = await verifyRoundedCard(iosCard, 'rgb(37, 37, 39)')
+  await page.screenshot({ path: join(output, '23-ios-tasks-dark.png'), fullPage: true })
+  await taskAppearance(page, 'inherit')
+  checks.independentTaskPreferencePersistsWithoutRemount = true
+  await mode(page, 'light'); await closeSettings(page)
   await appearance(page, 'default'); await closeSettings(page)
   assert.equal(await root.locator('article').first().evaluate(el => getComputedStyle(el).backgroundImage), 'none')
   await page.screenshot({ path: join(output, '08-tasks-default.png'), fullPage: true })
-  for (const style of ['default', 'paper']) {
+  for (const style of ['default', 'ios', 'paper']) {
     await appearance(page, style); await closeSettings(page)
     await search.focus()
     assert.equal(await search.evaluate(el => getComputedStyle(el).outlineStyle), 'none')
@@ -198,7 +258,7 @@ export async function verifyTasks(page, output) {
     await dialog.locator('input[name="title"]').focus()
     for (let i = 0; i < 16; i++) {
       await page.keyboard.press('Tab')
-      assert(await page.evaluate(() => !!document.activeElement.closest('dialog')))
+      assert(await page.evaluate(() => !!document.activeElement.closest('.dsh-tasks-dialog')))
     }
     await stage.click()
     await page.screenshot({ path: join(output, `09-tasks-${style}-select.png`), fullPage: true })
@@ -214,25 +274,35 @@ export async function verifyTasks(page, output) {
       if (action === 'blur') await page.evaluate(() => window.dispatchEvent(new Event('blur')))
       assert.equal(await card.locator('details').evaluate(el => el.open), false, `${style} menu ${action}`)
     }
-    for (const width of [1366, 1024, 768, 375]) {
+    for (const width of [1366, 1024, 768, 690, 375]) {
       await page.setViewportSize({ width, height: 960 })
       const dimensions = await root.evaluate(el => ({ width: el.clientWidth, scrollWidth: el.scrollWidth }))
       assert(dimensions.scrollWidth <= dimensions.width + 1)
       const overlap = await root.evaluate(el => {
-        const rects = [...el.querySelectorAll('.dsh-tasks-title, .dsh-tasks-search, .dsh-tasks-filter > summary, .dsh-tasks-toolbar > button')].map(node => node.getBoundingClientRect())
+        const rects = [...el.querySelectorAll('.dsh-tasks-title, .dsh-tasks-search, .dsh-tasks-filter > summary, .dsh-tasks-toolbar > button, .dsh-tasks-appearance')].map(node => node.getBoundingClientRect())
         return rects.some((a, i) => rects.slice(i + 1).some(b => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1))
       })
       assert.equal(overlap, false, `${style} toolbar overlap at ${width}`)
+      if (style !== 'default') {
+        checks.toolbars[style].push({ viewport: width, ...await verifyTaskToolbar(root) })
+        if (width === 375) await page.screenshot({ path: join(output, `26-${style}-tasks-toolbar-narrow.png`), fullPage: true })
+      }
       await opener.click(); await stage.click()
-      const bounds = await page.getByRole('listbox', { name: '任务分类', exact: true }).boundingBox()
+      const listbox = page.getByRole('listbox', { name: '任务分类', exact: true })
+      const bounds = await listbox.boundingBox()
       assert(bounds.x >= 0 && bounds.x + bounds.width <= width + 1 && bounds.y >= 0 && bounds.y + bounds.height <= 961)
+      if (style === 'paper') {
+        const radius = await dialog.evaluate(el => getComputedStyle(el).borderTopLeftRadius)
+        assert.equal(radius, width <= 600 && await dialog.evaluate(el => el.classList.contains('dsh-tasks-drawer')) ? '0px' : '20px')
+        assert.equal(await listbox.evaluate(el => getComputedStyle(el).borderRadius), '14px')
+      }
       if (width === 375) await page.screenshot({ path: join(output, `10-tasks-${style}-narrow.png`), fullPage: true })
       await page.keyboard.press('Escape'); await page.keyboard.press('Escape')
       checks.widths.push({ style, viewport: width, ...dimensions })
     }
     await page.setViewportSize({ width: 1366, height: 960 })
   }
-  checks.createSearchAndControlsBothThemes = true
+  checks.createSearchAndControlsAllThemes = true
   await mode(page, 'dark'); await closeSettings(page)
   checks.darkMaterials = await verifyMaterials(root, 'dark')
   await page.screenshot({ path: join(output, '11-tasks-paper-dark.png'), fullPage: true })
@@ -257,11 +327,57 @@ export async function verifyTasks(page, output) {
   return checks
 }
 
+async function verifyTaskToolbar(root) {
+  const toolbar = root.locator('.dsh-tasks-toolbar')
+  const layout = await toolbar.evaluate(el => {
+    const style = getComputedStyle(el)
+    const board = getComputedStyle(el.parentElement.querySelector('.dsh-tasks-board'))
+    const controls = [...el.querySelectorAll('.dsh-tasks-search, .dsh-tasks-filter > summary, .dsh-tasks-appearance select, :scope > button')]
+    const rects = controls.map(control => control.getBoundingClientRect())
+    return {
+      width: el.parentElement.clientWidth, shadow: style.boxShadow, border: style.borderBottomWidth,
+      gutter: style.paddingInlineStart, boardGutter: board.paddingInlineStart,
+      rows: new Set(rects.map(control => Math.round(control.y))).size,
+      heights: [...new Set(rects.map(control => control.height))],
+      radii: [...new Set(controls.map(control => getComputedStyle(control).borderRadius))],
+    }
+  })
+  assert.equal(layout.shadow, 'none')
+  assert.equal(layout.border, '0px')
+  assert.equal(layout.gutter, layout.boardGutter)
+  assert.equal(layout.rows, layout.width <= 700 ? 2 : 1, `Toolbar rows at ${layout.width}px`)
+  assert.deepEqual(layout.heights, [36])
+  assert.deepEqual(layout.radii, ['10px'])
+  const filter = toolbar.locator('.dsh-tasks-filter > summary')
+  await filter.press('Enter')
+  const menu = toolbar.locator('.dsh-tasks-filter > .dsh-tasks-menu')
+  await menu.waitFor()
+  const [panel, bounds] = await Promise.all([root.boundingBox(), menu.boundingBox()])
+  assert(bounds.x >= panel.x && bounds.x + bounds.width <= panel.x + panel.width + 1, 'Filter menu stays inside the board')
+  await filter.press('Escape')
+  await menu.waitFor({ state: 'hidden' })
+  await filter.blur()
+  return layout
+}
+
+async function verifyRoundedCard(card, color) {
+  const style = await card.evaluate(el => {
+    const css = getComputedStyle(el)
+    return { radius: css.borderTopLeftRadius, color: css.backgroundColor, image: css.backgroundImage, shadow: css.boxShadow, transition: css.transitionDuration }
+  })
+  assert.equal(style.radius, '20px')
+  assert.equal(style.color, color)
+  assert.equal(style.image, 'none')
+  assert.notEqual(style.shadow, 'none')
+  assert.equal(style.transition, '0s')
+  return style
+}
+
 async function verifyMaterials(root, mode) {
   const surfaces = await root.evaluate(el => {
     const read = (node, pseudo) => {
       const css = getComputedStyle(node, pseudo)
-      return { color: css.backgroundColor, textured: /data:image/.test(css.backgroundImage), shadow: css.boxShadow }
+      return { color: css.backgroundColor, textured: /data:image/.test(css.backgroundImage), shadow: css.boxShadow, radius: css.borderRadius }
     }
     return {
       desk: read(el), toolbar: read(el.querySelector('.dsh-tasks-toolbar')),
@@ -273,6 +389,8 @@ async function verifyMaterials(root, mode) {
   assert.equal(surfaces.toolbar.textured, false)
   assert.equal(surfaces.sheet.textured, true)
   assert.equal(surfaces.card.textured, true)
+  assert.equal(surfaces.sheet.radius, '20px')
+  assert.equal(surfaces.card.radius, '16px')
   assert.notEqual(surfaces.card.shadow, 'none')
   assert.equal(new Set(surfaces.tapes).size, 3)
   const brightness = color => color.match(/[\d.]+/g).slice(0, 3).map(Number).reduce((a, b) => a + b, 0)
@@ -291,6 +409,10 @@ export async function verifyConversation(page, output) {
   const composer = page.locator('[data-composer-input="true"]')
   const code = page.locator('pre').filter({ hasText: 'appearance: "paper"' })
   await code.waitFor()
+  await mode(page, 'light'); await appearance(page, 'ios'); await closeSettings(page)
+  await page.screenshot({ path: join(output, '24-ios-conversation-light.png'), fullPage: true })
+  await mode(page, 'dark'); await closeSettings(page)
+  await page.screenshot({ path: join(output, '25-ios-conversation-dark.png'), fullPage: true })
   await mode(page, 'light'); await appearance(page, 'paper'); await closeSettings(page)
   await page.screenshot({ path: join(output, '14-paper-conversation-light.png'), fullPage: true })
   await composer.fill('保留这份草稿：明天继续整理。')
@@ -298,9 +420,9 @@ export async function verifyConversation(page, output) {
   const [settingsPage] = await Promise.all([
     page.context().waitForEvent('page'), page.evaluate(() => { window.open(location.href, '_blank') }),
   ])
-  for (const value of ['default', 'paper']) {
+  for (const value of ['default', 'ios', 'paper']) {
     await appearance(settingsPage, value)
-    await page.waitForFunction(value => document.body.getAttribute('data-dsh-paper-theme') === (value === 'paper' ? 'paper' : null), value)
+    await waitForAppearance(page, value)
     assert(await composerNode.evaluate(el => el.isConnected))
     assert.equal(await composer.innerText(), '保留这份草稿：明天继续整理。')
   }
@@ -338,11 +460,12 @@ export async function verifyConversation(page, output) {
 
 export async function assertNoTheme(page) {
   await page.waitForFunction(() => !document.body.hasAttribute('data-dsh-paper-theme')
+    && !document.body.hasAttribute('data-dsh-task-appearance')
     && !document.querySelector('style[data-dsh-paper-settings]'))
   const remaining = await page.evaluate(() => ({
-    marker: document.querySelectorAll('[data-dsh-paper-theme]').length,
+    marker: document.querySelectorAll('[data-dsh-paper-theme], [data-dsh-task-appearance]').length,
     styleNodes: document.querySelectorAll('style[data-dsh-paper-settings]').length,
-    tokenVariables: [...document.body.style].filter(name => name.startsWith('--dsh-paper-')).length,
+    tokenVariables: [...document.body.style].filter(name => /^--dsh-(paper|ios)-/.test(name)).length,
   }))
   assert.deepEqual(remaining, { marker: 0, styleNodes: 0, tokenVariables: 0 })
   await openSettings(page)
@@ -354,8 +477,8 @@ export async function assertNoTheme(page) {
 
 export async function verifyDisable(page, output) {
   await page.getByRole('button', { name: '插件', exact: true }).click()
-  const toggle = page.getByRole('switch', { name: '启用 dsh-plugin-paper-theme', exact: true })
-  if (!await toggle.isVisible()) await page.getByText('dsh-plugin-paper-theme', { exact: true }).first().click()
+  const toggle = page.getByRole('switch', { name: '启用 @tavlo-dsh/dsh-plugin-paper-theme', exact: true })
+  if (!await toggle.isVisible()) await page.getByText('@tavlo-dsh/dsh-plugin-paper-theme', { exact: true }).first().click()
   assert.equal(await toggle.getAttribute('aria-checked'), 'true')
   await toggle.click()
   const removed = await assertNoTheme(page)
@@ -363,18 +486,20 @@ export async function verifyDisable(page, output) {
   await page.screenshot({ path: join(output, '06-disabled-settings.png'), fullPage: true })
   await closeSettings(page)
   await page.getByRole('button', { name: '插件', exact: true }).click()
-  await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="启用 dsh-plugin-paper-theme"]')?.getAttribute('aria-checked') === 'false')
+  await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="启用 @tavlo-dsh/dsh-plugin-paper-theme"]')?.getAttribute('aria-checked') === 'false')
   await toggle.click()
   await page.waitForFunction(() => document.body.getAttribute('data-dsh-paper-theme') === 'paper')
   return { removed, reenableRestoresSavedPaper: true }
 }
 
 export async function verifyUninstall(page, output) {
+  await page.getByRole('button', { name: '任务', exact: true }).click()
+  await taskAppearance(page, 'ios')
   await page.getByRole('button', { name: '插件', exact: true }).click()
-  const remove = page.getByRole('button', { name: '卸载 dsh-plugin-paper-theme', exact: true })
-  if (!await remove.isVisible()) await page.getByText('dsh-plugin-paper-theme', { exact: true }).first().click()
+  const remove = page.getByRole('button', { name: '卸载 @tavlo-dsh/dsh-plugin-paper-theme', exact: true })
+  if (!await remove.isVisible()) await page.getByText('@tavlo-dsh/dsh-plugin-paper-theme', { exact: true }).first().click()
   await remove.click()
-  await page.getByRole('dialog', { name: '卸载「dsh-plugin-paper-theme」？', exact: true })
+  await page.getByRole('dialog', { name: '卸载「@tavlo-dsh/dsh-plugin-paper-theme」？', exact: true })
     .getByRole('button', { name: '卸载', exact: true }).click()
   const removed = await assertNoTheme(page)
   await page.getByRole('button', { name: '任务', exact: true }).click()
@@ -382,6 +507,7 @@ export async function verifyUninstall(page, output) {
   const cards = page.locator('.dsh-tasks-root article')
   assert.equal(await cards.count(), 2)
   assert.equal(await cards.first().evaluate(el => getComputedStyle(el).backgroundImage), 'none')
+  assert.equal(await page.getByRole('combobox', { name: '任务卡片外观', exact: true }).count(), 0)
   await page.screenshot({ path: join(output, '18-tasks-after-theme-removal.png'), fullPage: true })
   await page.reload({ waitUntil: 'domcontentloaded' })
   await page.getByRole('button', { name: '任务', exact: true }).click()

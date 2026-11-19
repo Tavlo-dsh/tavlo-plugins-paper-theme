@@ -50,9 +50,9 @@
 在两个插件目录分别执行 `npm install`、`npm test`、`npm pack`。浏览器脚本仅在源码目录提供，不进入安装包。以下从主题目录运行；将三个路径换成本机已安装文件，不需要在线脚本或 CDN：
 
 ```powershell
-$env:DSH_CLI = 'F:/soft/nodejs/node_global/node_modules/@deepseek-ai/dsh/lib/bin.js'
-$env:PLAYWRIGHT_MODULE = '<本机 playwright/index.mjs 的绝对路径>'
-$env:BROWSER_EXECUTABLE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'
+$env:DSH_CLI = '<DSH CLI bin.js 的绝对路径>'
+$env:PLAYWRIGHT_MODULE = '<Playwright index.mjs 的绝对路径>'
+$env:BROWSER_EXECUTABLE = '<浏览器可执行文件的绝对路径>'
 node scripts/verify-browser.mjs ./dsh-plugin-paper-theme-0.1.0.tgz ../tavlo-plugins-tasks/dsh-plugin-tasks-0.1.0.tgz
 node scripts/verify-task-standalone.mjs ../tavlo-plugins-tasks/dsh-plugin-tasks-0.1.0.tgz
 ```

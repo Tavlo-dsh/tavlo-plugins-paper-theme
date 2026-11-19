@@ -3,7 +3,8 @@ import s from '@deepseek-ai/schemastery'
 
 export const name = 'tavlo-paper-theme'
 export const Config = s.object({
-  appearance: s.union(['default', 'paper']).default('default').volatile(),
+  appearance: s.union(['default', 'ios', 'paper']).default('default').volatile(),
+  taskAppearance: s.union(['inherit', 'ios', 'paper']).default('inherit').volatile(),
 })
 
 /** The dedicated settings section owns editing instead of the generic form. */

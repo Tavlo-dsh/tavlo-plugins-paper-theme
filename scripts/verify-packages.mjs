@@ -10,8 +10,9 @@ assert(testedDirectory && deliveredDirectory, 'Usage: node scripts/verify-packag
 const hash = bytes => createHash('sha256').update(bytes).digest('hex')
 const results = []
 const deliveredFiles = await readdir(deliveredDirectory)
-for (const name of ['dsh-plugin-paper-theme', 'dsh-plugin-tasks']) {
-  const candidates = deliveredFiles.filter(file => file.startsWith(name + '-') && file.endsWith('.tgz'))
+for (const baseName of ['dsh-plugin-paper-theme', 'dsh-plugin-tasks']) {
+  const name = `@tavlo-dsh/${baseName}`
+  const candidates = deliveredFiles.filter(file => file.startsWith(`tavlo-dsh-${baseName}-`) && file.endsWith('.tgz'))
   if (!candidates.length) continue
   assert.equal(candidates.length, 1, `Keep one version per package in the delivery directory: ${name}`)
   const archive = resolve(deliveredDirectory, candidates[0])
@@ -24,9 +25,11 @@ for (const name of ['dsh-plugin-paper-theme', 'dsh-plugin-tasks']) {
   assert.equal(pkg.name, name)
   assert.equal(pkg.engines.dsh, '0.2.2-rc.1')
   assert.equal(pkg.dependencies?.react, undefined)
-  assert.equal(pkg.dependencies?.[name === 'dsh-plugin-tasks' ? 'dsh-plugin-paper-theme' : 'dsh-plugin-tasks'], undefined)
-  for (const file of ['package/index.js', 'package/client.js', 'package/cordis.patch.yml']) assert(list.includes(file))
-  if (name === 'dsh-plugin-tasks') assert(list.includes('package/licenses/looseleaf-MIT.txt'))
+  const sibling = baseName === 'dsh-plugin-tasks' ? 'dsh-plugin-paper-theme' : 'dsh-plugin-tasks'
+  assert.equal(pkg.dependencies?.[`@tavlo-dsh/${sibling}`], undefined)
+  assert.equal(pkg.dependencies?.[sibling], undefined)
+  for (const file of [pkg.main, pkg.exports['./client'], pkg.dsh.bundle.patch]) assert(list.includes(`package/${file.replace(/^\.\//, '')}`))
+  if (baseName === 'dsh-plugin-tasks') assert(list.includes('package/licenses/looseleaf-MIT.txt'))
   else assert(list.includes('package/LICENSE'))
   const runtime = list.filter(path => !path.startsWith('package/docs/') && !path.startsWith('package/scripts/') && !path.endsWith('README.md'))
   const runtimeHashes = {}
